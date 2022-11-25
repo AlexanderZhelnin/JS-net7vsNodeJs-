@@ -12,15 +12,23 @@ const ls = json.sort((l1, l2) => {
   if (l1.priority > l2.priority) return 1;
   return 0;
 });
+const rect = { left: 1200, bottom: 50, right: 4000, top: 2850 };
+const pr = {
+  left: rect.left,
+  top: rect.top,
+  scale: 0.37037037037037035,
+  mashtab: 100,
+};
+const STR1 = "asrgfsadf12421";
+const STR2 = "asrgfsadf12321";
 
 const server = http.createServer((req, res) => {
-  
   if (req.url == "/") {
     res.statusCode = 200;
     res.setHeader("Content-Type", "text/plain");
     res.end("Hello World nodeJs!");
   }
-  
+
   if (req.url == "/readfile") {
     res.statusCode = 200;
     res.setHeader("Content-Type", "text/plain");
@@ -43,29 +51,28 @@ const server = http.createServer((req, res) => {
     res.end(a.toString());
   }
 
-  const rect = { left: 1200, bottom: 50, right: 4000, top: 2850 };
-  const pr = { left: rect.left, top: rect.top, scale: 0.37037037037037035, mashtab: 100 };
   if (req.url == "/map") {
     res.statusCode = 200;
     res.setHeader("Content-Type", "application/json; charset=utf-8");
-      
+
     res.end(JSON.stringify(build(ls, pr, rect)));
   }
-
-  const STR1 = 'asrgfsadf12421';
-  const STR2 = 'asrgfsadf12321';
 
   if (req.url == "/naturalsort") {
     res.statusCode = 200;
     res.setHeader("Content-Type", "application/json; charset=utf-8");
 
     let result = 0;
-    for (let i = 0; i < 10000; i++) 
+    for (let i = 0; i < 10000; i++)
       result += compareStrings(STR1 + i, STR2 + i);
+
+    // result += (STR1 + i).localeCompare(STR2 + i, undefined, {
+    //   numeric: true,
+    //   sensitivity: "base",
+    // });
 
     res.end(result.toString());
   }
-
 });
 
 server.listen(port, hostname, () => {
