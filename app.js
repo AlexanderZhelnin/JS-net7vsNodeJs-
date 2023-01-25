@@ -1,10 +1,15 @@
 import { build } from "./gr-kernel/kernel.mjs";
 import { compareStrings } from "./strings.mjs";
+import { ThreadPool } from "./threadPool.mjs";
 import * as fs from "fs";
 import * as http from "http";
 
 const hostname = "127.0.0.1";
-const port = 3000;
+const port = 3001;
+
+const fibonacciPool = new ThreadPool("./fibonacci.js");
+const mapPool = new ThreadPool("./map.js");
+const mapPoolWithRead = new ThreadPool("./mapWithRead.js");
 
 const json = JSON.parse(fs.readFileSync("primitives.json", "utf8"));
 const ls = json.sort((l1, l2) => {
@@ -27,6 +32,7 @@ const server = http.createServer((req, res) => {
     res.statusCode = 200;
     res.setHeader("Content-Type", "text/plain");
     res.end("Hello World nodeJs!");
+    return;
   }
 
   if (req.url == "/readfile") {
@@ -34,6 +40,8 @@ const server = http.createServer((req, res) => {
     res.setHeader("Content-Type", "text/plain");
     const data = fs.readFileSync("data.txt", "utf8");
     res.end(data);
+
+    return;
   }
 
   if (req.url == "/fibonacci") {
@@ -49,6 +57,18 @@ const server = http.createServer((req, res) => {
     res.statusCode = 200;
     res.setHeader("Content-Type", "text/plain");
     res.end(a.toString());
+
+    return;
+  }
+
+  if (req.url == "/fibonacci/thread") {
+    fibonacciPool.run().then((r) => {
+      res.statusCode = 200;
+      res.setHeader("Content-Type", "text/plain");
+      res.end(r);
+    });
+
+    return;
   }
 
   if (req.url == "/map") {
@@ -56,6 +76,25 @@ const server = http.createServer((req, res) => {
     res.setHeader("Content-Type", "application/json; charset=utf-8");
 
     res.end(JSON.stringify(build(ls, pr, rect)));
+    return;
+  }
+
+  if (req.url == "/map/thread") {
+    mapPool.run({ ls, pr, rect }).then((r) => {
+      res.statusCode = 200;
+      res.setHeader("Content-Type", "text/plain");
+      res.end(JSON.stringify(r).length.toString());
+    });
+    return;
+  }
+
+  if (req.url == "/map/thread/with_thread") {
+    mapPoolWithRead.run({ pr, rect }).then((r) => {
+      res.statusCode = 200;
+      res.setHeader("Content-Type", "text/plain");
+      res.end(JSON.stringify(r).length.toString());
+    });
+    return;
   }
 
   if (req.url == "/naturalsort") {
@@ -72,6 +111,7 @@ const server = http.createServer((req, res) => {
     // });
 
     res.end(result.toString());
+    return;
   }
 });
 

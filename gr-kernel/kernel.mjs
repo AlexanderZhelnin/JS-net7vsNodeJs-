@@ -22,13 +22,11 @@ export function* clipPrimitives(l, pr, rect) {
       // Необходимо отсекать
       switch (l.type) {
         case 1:
-          for (const cs of clipPolyline(g, rect)) 
-            yield { coords: cs };
+          for (const cs of clipPolyline(g, rect)) yield { coords: cs };
           break;
         case 2:
           const cs = clipPolygon(g, rect);
-          if (cs.length > 0) 
-            yield { coords: cs };
+          if (cs.length > 0) yield { coords: cs };
           break;
       }
   }
@@ -48,6 +46,7 @@ export function build(ls, pr, rect) {
       const csOpt = optimize(obraz.coords, mashtab);
       translate(csOpt, pr);
       mas.push(csOpt);
+      mas.push(obraz.coords);
     }
   }
 

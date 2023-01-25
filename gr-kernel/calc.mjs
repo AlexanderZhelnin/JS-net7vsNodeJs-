@@ -87,7 +87,7 @@ export function calcMaxLen(coords)
 export function optimize(mas, l = 1)
 {
   const count = mas.length;
-  if (count < 60) return mas;
+  if (count < 5) return mas;
 
   const coords = [];
   let lastCoordX1 = mas[0];
