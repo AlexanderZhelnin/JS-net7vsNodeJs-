@@ -37,7 +37,7 @@ function* naturalSplit(str) {
 /**
  * Натуральное сравнение 2-х строк
  *
- * ```ts
+ * ```
  * compareStrings('10ff', '2ff') // => 1
  * ```
  *
@@ -61,6 +61,6 @@ export function compareStrings(str1, str2) {
       }
     }
     // Если какой-то части нет, значит эта строка меньше другой иначе равны
-    else return !!splitValue1.value ? 1 : !!splitValue2.value ? -1 : 0;
+    else return splitValue1.value ? 1 : splitValue2.value ? -1 : 0;
   }
 }

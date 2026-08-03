@@ -64,14 +64,13 @@ export function calcMaxLen(coords)
 
   for (let i = 2; i < coords.length; i += 2)
   {
-
     let x2 = coords[i];
     let y2 = coords[i + 1];
 
     const dx = x2 - x1;
     const dy = y2 - y1;
 
-    const l = Math.sqrt(dx * dx + dy * dy);
+    const l = Math.hypot(dx, dy);
     if (max < l)
     {
       max = l;
@@ -94,92 +93,67 @@ export function optimize(mas, l = 1)
   let lastCoordY1 = mas[1];
   let lastCoordX2 = mas[2];
   let lastCoordY2 = mas[3];
-  coords.push(lastCoordX1);
-  coords.push(lastCoordY1);
+  coords.push(lastCoordX1, lastCoordY1);
 
+
+  const lSq = l * l;
   for (let i = 4; i < count; i += 2)
-    if (!isPointOnLine(lastCoordX1, lastCoordY1, lastCoordX2, lastCoordY2, mas[i], mas[i + 1], l))
+    if (!isPointOnLine(lastCoordX1, lastCoordY1, lastCoordX2, lastCoordY2, mas[i], mas[i + 1], lSq))
     {
       lastCoordX1 = mas[i - 2];
       lastCoordY1 = mas[i - 1];
 
       lastCoordX2 = mas[i];
       lastCoordY2 = mas[i + 1];
-      coords.push(lastCoordX1);
-      coords.push(lastCoordY1);
+      coords.push(lastCoordX1, lastCoordY1);
     }
 
-  coords.push(mas[count - 2]);
-  coords.push(mas[count - 1]);
+  coords.push(mas[count - 2], mas[count - 1]);
 
   return coords;
 }
 
 /** Находится ли следующая точка на линии с определённым допуском */
-export function isPointOnLine(pX1, pY1, pX2, pY2, pX3, pY3, l)
+export function isPointOnLine(pX1, pY1, pX2, pY2, pX, pY, distance)
 {
-  if ((pX3 === pX1 && pX3 === pY1) || (pX3 === pX1 && pX3 === pY1))
-    return true;
+  const a = pX - pX1;
+  const b = pY - pY1;
+  const c = pX2 - pX1;
+  const d = pY2 - pY1;
 
-  let aX = pX2 - pX1;
-  let aY = pY2 - pY1;
-  // вектор повёрнутый на 90
-  let pX4 = -aY + pX3;
-  let pY4 = aX + pY3;
+  const lenSq = c * c + d * d;
 
-  let retX = 0;
-  let retY = 0;
-  if (pX2 === pX1)
+  let dx, dy
+  if (lenSq === 0)
   {
-    retX = pX1;
-    if (pY4 === pY3)
-      retY = pY3;
-    else if (pX4 !== pX3)
-      retY = (pX1 - pX3) * (pY4 - pY3) / (pX4 - pX3) + pY3;
-    else
-    {
-      //console.log('');
-    }
+    // Точки совпадают — расстояние до точки
+    dx = pX - pX1;
+    dy = pY - pX1;
+    return dx * dx + dy * dy < distance;
   }
-  else if (pY2 === pY1)
-  {
-    retY = pY1;
-    if (pX4 === pX3)
-      retX = pX3;
-    else if (pY4 !== pY3)
-      retX = (pY1 - pY3) * (pX4 - pX3) / (pY4 - pY3) + pX3;
-    else
-    {
-      //console.log('');
-    }
-  }
-  else if (pX4 === pX3)
-  {
-    retX = pX3;
-    retY = (pX3 - pX1) * (pY2 - pY1) / (pX2 - pX1) + pY1;
 
-  }
-  else if (pY4 === pY3)
-  {
-    retY = pY3;
-    retX = (pY3 - pY1) * (pX2 - pX1) / (pY2 - pY1) + pX1;
+  const param = (a * c + b * d) / lenSq;
 
+  let xx, yy
+  if (param < 0)
+  {
+    xx = pX1
+    yy = pY1
+  }
+  else if (param > 1)
+  {
+    xx = pX2
+    yy = pY2
   }
   else
   {
-    var k1 = (pY2 - pY1) / (pX2 - pX1);
-    var k2 = (pY4 - pY3) / (pX4 - pX3);
-
-    retX = (k1 * pX1 - k2 * pX3 + pY3 - pY1) / (k1 - k2);
-    retY = (retX - pX1) * k1 + pY1;
+    xx = pX1 + param * c
+    yy = pY1 + param * d
   }
 
-  retX -= pX3;
-  retY -= pY3;
-
-
-  return Math.sqrt(retX * retX + retY * retY) < l;
-
+  dx = pX - xx
+  dy = pY - yy
+  return dx * dx + dy * dy < distance
 }
 
 /** Преобразование из коэффициента в масштаб */
